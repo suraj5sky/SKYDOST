@@ -1,112 +1,12 @@
 const chatContainer = document.getElementById("chat-container");
-const chatForm = document.getElementById("chat-form");
 const userInput = document.getElementById("user-input");
 const typingIndicator = document.getElementById("typing-indicator");
 const sendButton = document.getElementById("send-button");
 const clearChatButton = document.getElementById("clear-chat");
-const voiceButton = document.getElementById("voice-button");
 const voiceToggle = document.getElementById("voice-toggle");
-const voiceStatus = document.getElementById("voice-status");
 const modeElements = document.querySelectorAll(".mode");
-const helpButton = document.getElementById("help-button");
-const helpModal = document.getElementById("help-modal");
 
 let currentMode = "general";
-let isListening = false;
-let recognition = null;
-
-// Check if browser supports Speech Recognition
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    
-    recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript;
-        userInput.value = transcript;
-        chatForm.dispatchEvent(new Event("submit"));
-    };
-    
-    recognition.onerror = function(event) {
-        console.error('Speech recognition error', event.error);
-        appendMessage("bot", "Sorry, I couldn't hear you clearly. Please try again.");
-        stopVoiceRecognition();
-    };
-    
-    recognition.onend = function() {
-        stopVoiceRecognition();
-    };
-} else {
-    // Browser doesn't support speech recognition
-    voiceButton.style.display = 'none';
-    voiceToggle.style.display = 'none';
-}
-
-// Toggle help modal
-helpButton.addEventListener("click", () => {
-    helpModal.style.display = helpModal.style.display === 'block' ? 'none' : 'block';
-});
-
-// Close help modal when clicking outside
-document.addEventListener("click", (e) => {
-    if (!helpModal.contains(e.target) && e.target !== helpButton) {
-        helpModal.style.display = 'none';
-    }
-});
-
-// Function to start voice recognition
-function startVoiceRecognition() {
-    if (recognition) {
-        try {
-            recognition.start();
-            isListening = true;
-            voiceButton.classList.add('listening');
-            voiceStatus.classList.add('active');
-            voiceStatus.innerHTML = '<i class="fas fa-microphone"></i> <span>Listening...</span>';
-            userInput.placeholder = "I'm listening...";
-        } catch (error) {
-            console.error('Speech recognition start failed', error);
-        }
-    }
-}
-
-// Function to stop voice recognition
-function stopVoiceRecognition() {
-    isListening = false;
-    voiceButton.classList.remove('listening');
-    voiceStatus.classList.remove('active');
-    voiceStatus.innerHTML = '<i class="fas fa-microphone-slash"></i> <span>Voice: Off</span>';
-    userInput.placeholder = "Ask me anything about your studies...";
-}
-
-// Toggle voice recognition
-voiceButton.addEventListener("click", () => {
-    if (!recognition) return;
-    
-    if (isListening) {
-        recognition.stop();
-        stopVoiceRecognition();
-    } else {
-        startVoiceRecognition();
-    }
-});
-
-// Voice toggle button
-voiceToggle.addEventListener("click", () => {
-    if (!recognition) return;
-    
-    if (isListening) {
-        recognition.stop();
-        stopVoiceRecognition();
-        voiceToggle.innerHTML = '<i class="fas fa-microphone"></i> Voice';
-    } else {
-        startVoiceRecognition();
-        voiceToggle.innerHTML = '<i class="fas fa-microphone-slash"></i> Stop';
-    }
-});
 
 // Handle mode selection
 modeElements.forEach(mode => {
@@ -120,41 +20,42 @@ modeElements.forEach(mode => {
         // Set current mode
         currentMode = mode.dataset.mode;
         
-        // Send mode change message
+        // Send mode change to backend
+        fetch('/mode', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ mode: currentMode })
+        });
+        
+        // Show mode change message
         let modeMessage = "";
         switch(currentMode) {
             case "subject":
                 modeMessage = "📘 Subject Mode activated! What subject would you like help with?";
                 break;
-            case "quiz":
-                modeMessage = "🧩 Quiz Mode activated! Let's test your knowledge. What topic would you like a quiz on?";
+            case "informative":
+                modeMessage = "🧩 Informative Mode activated! I'll provide detailed explanations and insights. What would you like to learn about?";
                 break;
             case "motivation":
-                modeMessage = "🌱 Motivation Mode activated! Need some inspiration or encouragement?";
+                modeMessage = "🌱 Motivation Mode activated! Need some inspiration or encouragement to keep studying?";
                 break;
             default:
                 modeMessage = "💬 General Chat mode activated! How can I help you today?";
         }
         
         appendMessage("bot", modeMessage);
-        
-        // Send mode change to server
-        fetch("/mode", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ mode: currentMode })
-        }).catch(error => {
-            console.error("Mode change error:", error);
-        });
     });
 });
 
 // Function to append messages to chat container
-function appendMessage(sender, message, provider = null) {
-    const now = new Date();
-    const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+function appendMessage(sender, message) {
+    // Remove welcome message if it's the first user message
+    const welcomeContainer = document.querySelector('.welcome-container');
+    if (welcomeContainer && sender === "user") {
+        welcomeContainer.remove();
+    }
     
     const messageDiv = document.createElement("div");
     messageDiv.classList.add("message", sender);
@@ -167,18 +68,16 @@ function appendMessage(sender, message, provider = null) {
             <div class="message-content">
                 <div class="sender">SKY Dost</div>
                 <div class="text">${message}</div>
-                <div class="time">${timeString}</div>
             </div>
         `;
     } else {
         messageDiv.innerHTML = `
+            <div class="avatar">
+                <i class="fas fa-user"></i>
+            </div>
             <div class="message-content">
                 <div class="sender">You</div>
                 <div class="text">${message}</div>
-                <div class="time">${timeString}</div>
-            </div>
-            <div class="avatar">
-                <i class="fas fa-user"></i>
             </div>
         `;
     }
@@ -188,131 +87,138 @@ function appendMessage(sender, message, provider = null) {
 }
 
 // Handle form submission
-chatForm.addEventListener("submit", async (e) => {
+sendButton.addEventListener("click", async (e) => {
     e.preventDefault();
     const userMessage = userInput.value.trim();
     if (!userMessage) return;
 
     appendMessage("user", userMessage);
     userInput.value = "";
+    userInput.style.height = "auto";
     userInput.focus();
     
     // Disable send button during request
     sendButton.disabled = true;
-    sendButton.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
     
     typingIndicator.style.display = "flex";
+    chatContainer.scrollTop = chatContainer.scrollHeight;
 
     try {
-        const response = await fetch("/chat", {
-            method: "POST",
+        // Make API call to backend
+        const response = await fetch('/chat', {
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json"
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({ 
                 message: userMessage,
-                mode: currentMode 
+                mode: currentMode
             })
         });
-
-        const data = await response.json();
-        typingIndicator.style.display = "none";
         
-        // Re-enable send button
-        sendButton.disabled = false;
-        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-
-        if (data.answer) {
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Display the response from the backend (without provider info)
             appendMessage("bot", data.answer);
-        } else if (data.error) {
-            appendMessage("bot", "Sorry, I encountered an error. Please try again.");
+        } else {
+            // Handle error
+            appendMessage("bot", "Sorry, I'm having trouble connecting right now. Please try again later.");
+            console.error("API Error:", data.error);
         }
     } catch (error) {
+        // Handle network error
+        appendMessage("bot", "Network error. Please check your connection and try again.");
+        console.error("Network Error:", error);
+    } finally {
+        // Hide typing indicator and re-enable send button
         typingIndicator.style.display = "none";
-        
-        // Re-enable send button
         sendButton.disabled = false;
-        sendButton.innerHTML = '<i class="fas fa-paper-plane"></i>';
-        
-        appendMessage("bot", "Sorry, I'm having trouble connecting. Please check your connection and try again.");
-        console.error("Chat error:", error);
     }
 });
 
-// Display current mode status
-async function displayStatus() {
-    try {
-        const response = await fetch("/status");
-        const data = await response.json();
-        
-        const statusElement = document.createElement("div");
-        statusElement.classList.add("status-message");
-        
-        let statusHTML = `<div>AI Assistant Ready`;
-        
-        if (!data.any_provider_available) {
-            statusHTML = `<div>Basic Mode (Limited Features)`;
-        }
-        
-        statusHTML += '</div>';
-        statusElement.innerHTML = statusHTML;
-        
-        // Insert at the beginning of chat container
-        chatContainer.insertBefore(statusElement, chatContainer.firstChild);
-    } catch (error) {
-        console.log("Could not load status:", error);
-    }
-}
 
-// Call status display when page loads
-window.addEventListener("load", () => {
-    displayStatus();
-    userInput.focus();
+// Allow sending message with Enter key
+userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendButton.click();
+    }
+});
+
+// Auto-resize textarea
+userInput.addEventListener("input", function() {
+    this.style.height = "auto";
+    this.style.height = (this.scrollHeight) + "px";
 });
 
 // Clear chat history
 clearChatButton.addEventListener("click", async () => {
     if (confirm("Are you sure you want to clear the conversation?")) {
         try {
-            const response = await fetch("/clear", {
-                method: "POST",
+            // Call backend to clear chat
+            await fetch('/clear', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json"
+                    'Content-Type': 'application/json',
                 }
             });
             
-            if (response.ok) {
-                // Clear the chat UI but keep the welcome message and status
-                const messages = chatContainer.querySelectorAll('.message:not(.welcome)');
-                messages.forEach(msg => msg.remove());
+            // Clear the chat UI
+            chatContainer.innerHTML = '';
+            
+            // Add welcome message back
+            const welcomeContainer = document.createElement('div');
+            welcomeContainer.className = 'welcome-container';
+            welcomeContainer.innerHTML = `
+                <h1 class="welcome-title">Hello, I'm SKY Dost</h1>
+                <p class="welcome-subtitle">Your study friend and assistant</p>
                 
-                // Re-display status
-                displayStatus();
+                <div class="capabilities">
+                    <div class="capability">
+                        <i class="fas fa-book"></i>
+                        <h3>Subject Help</h3>
+                        <p>Get explanations for any subject or topic you're studying</p>
+                    </div>
+                    <div class="capability">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>Informative Content</h3>
+                        <p>Learn with detailed explanations and examples</p>
+                    </div>
+                    <div class="capability">
+                        <i class="fas fa-heart"></i>
+                        <h3>Motivation</h3>
+                        <p>Get encouragement and study tips to stay focused</p>
+                    </div>
+                    <div class="capability">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h3>Study Plans</h3>
+                        <p>Create customized study schedules and plans</p>
+                    </div>
+                </div>
                 
-                // Add a confirmation message
-                appendMessage("bot", "Conversation cleared. How can I help you with your studies today?");
-            }
+                <p>How can I help with your studies today?</p>
+            `;
+            
+            chatContainer.appendChild(welcomeContainer);
         } catch (error) {
-            console.error("Clear chat error:", error);
+            console.error("Error clearing chat:", error);
         }
     }
 });
 
-// Allow sending message with Enter key
-userInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        chatForm.dispatchEvent(new Event("submit"));
-    }
-});
-
-// Auto-resize textarea (if we change to textarea later)
-userInput.addEventListener("input", function() {
-    this.style.height = "auto";
-    this.style.height = (this.scrollHeight) + "px";
-});
-
-// Focus input on load
-window.addEventListener("load", () => {
+// Check API status on load
+window.addEventListener("load", async () => {
     userInput.focus();
+    
+    try {
+        const response = await fetch('/status');
+        const status = await response.json();
+        
+        if (!status.any_provider_available) {
+            appendMessage("bot", "⚠️ Note: Running in basic mode. Add API keys to enable AI providers.", "system");
+        }
+    } catch (error) {
+        console.error("Error checking status:", error);
+    }
 });

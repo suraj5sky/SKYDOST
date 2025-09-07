@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKY Pipe Style Logo</title>
+
+    <style>
+        /* Import Two Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Audiowide&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #020024, #000814 80%);
+            overflow: hidden;
+            perspective: 1500px;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            transition: transform 0.2s ease-out;
+        }
+
+        .logo-circle {
+            width: clamp(90px, 36vw, 320px);
+            height: clamp(90px, 36vw, 320px);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 0 40px rgba(255, 255, 255, 0.15),
+                0 0 90px rgba(0, 255, 255, 0.4);
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out;
+        }
+
+        /* Rotating Neon Border */
+        .logo-circle::before {
+            content: '';
+            position: absolute;
+            width: 180%;
+            height: 180%;
+            background: conic-gradient(
+                #00c3ff,
+                #ff005e,
+                #00ff85,
+                #ff005e,
+                #00c3ff
+            );
+            border-radius: 50%;
+            animation: spinBorder 5s linear infinite;
+            z-index: 1;
+            filter: blur(1.5px);
+        }
+
+        @keyframes spinBorder {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        /* Inner Circle */
+        .logo-circle::after {
+            content: '';
+            position: absolute;
+            width: 92%;
+            height: 92%;
+            background: radial-gradient(circle at 30% 30%, #04001f, #000814 80%);
+            border-radius: 50%;
+            z-index: 2;
+            animation: holographic 7s ease-in-out infinite;
+            background-size: 300% 300%;
+            box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.15);
+        }
+
+        @keyframes holographic {
+            0%   { background-position: 0% 0%; }
+            25%  { background-position: 100% 0%; }
+            50%  { background-position: 100% 100%; }
+            75%  { background-position: 0% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+
+        /* SKY Text Styling */
+        .logo-text {
+            display: flex;
+            gap: 0px;
+            font-size: clamp(30px, 5vw, 55px);
+            font-weight: 900;
+            letter-spacing: -3px;
+            z-index: 3;
+            text-transform: uppercase;
+            position: relative;
+            transform: translateZ(35px);
+        }
+
+        .logo-text span {
+            display: inline-block;
+            position: relative;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            padding: 0;
+        }
+
+        /* S → Sky Blue Pipe */
+        #s {
+            font-family: 'Audiowide', sans-serif;
+            background-image: linear-gradient(135deg, #00e1ff 0%, #009dff 40%, #00c3ff 100%);
+            text-shadow: 0 0 15px #00c3ff, 0 0 30px #00c3ff, 0 0 60px #00c3ff;
+        }
+
+        /* K → Pinkish Red Pipe */
+        #k {
+            font-family: 'Audiowide', sans-serif;
+            background-image: linear-gradient(135deg, #ff4088 0%, #ff005e 50%, #b70049 100%);
+            text-shadow: 0 0 15px #ff005e, 0 0 30px #ff005e, 0 0 60px #ff005e;
+        }
+
+        /* Y → Different Stylish Font */
+        #y {
+            font-family: 'Orbitron', sans-serif; /* Different futuristic font */
+            background-image: linear-gradient(160deg, #00ffcc 0%, #00ff85 50%, #00b56d 100%);
+            text-shadow:
+                0 0 10px #00ffcc,
+                0 0 20px #00ff85,
+                0 0 35px #00ff85,
+                0 0 60px #00ff85;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container" id="logo">
+        <!-- Energy Waves -->
+        <div class="energy-wave"></div>
+        <div class="energy-wave"></div>
+        <div class="energy-wave"></div>
+
+        <!-- Logo -->
+        <div class="logo-circle">
+            <h1 class="logo-text">
+                <span id="s">S</span>
+                <span id="k">K</span>
+                <span id="y">Y</span>
+            </h1>
+        </div>
+    </div>
+
+    <script>
+        // Mouse-based 3D Tilt Effect
+        const logo = document.getElementById("logo");
+
+        document.addEventListener("mousemove", (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 30;
+            const y = (e.clientY / window.innerHeight - 0.5) * 30;
+
+            logo.style.transform = `rotateX(${-y}deg) rotateY(${x}deg)`;
+        });
+
+        document.addEventListener("mouseleave", () => {
+            logo.style.transform = "rotateX(0deg) rotateY(0deg)";
+        });
+    </script>
+</body>
+</html>

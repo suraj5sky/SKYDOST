@@ -4,3 +4,4 @@ openai
 groq
 requests
 gunicorn
+flask-cors

@@ -4,113 +4,202 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SKY Dost - Your Study Friend</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+	<link rel="stylesheet" href="static/style.css">
+	    <!-- ✅ Favicon -->
+    <link rel="icon" type="image/x-icon" href="/static/logo/favicon.ico" />
+    <link rel="apple-touch-icon" href="/static/logo/favicon.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	
+	<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V7CWM1Q444"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-V7CWM1Q444', {
+    'cookie_domain': 'skyinfinitetech.com'
+  });
+</script>
+
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div class="header-content">
-                <div class="logo">SKY</div>
-                <h1><span>SKY</span> Dost - Your Study Friend</h1>
+     <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+        <a href="/" style="display: flex; align-items: center; gap: 0;">
+<iframe 
+    src="{{ url_for('static', filename='logo/index.html') }}" 
+    style="
+        border: none;
+        width: 95px;         
+        height: 95px;        
+        transform: scale(0.55);
+        transform-origin: center;
+        background: transparent;
+        border-radius: 50%;
+        overflow: hidden;
+        display: block;
+        margin-right: -15px;  
+        margin-top: -25px;     
+        margin-bottom: -25px;  
+    "
+    scrolling="no"
+    title="SKY Logo">
+</iframe>
+            <!-- Logo with 3 brand colors (inline style) -->
+<!-- Animated Gradient Logo -->
+<span class="logo-text" style="
+    font-size: 36px; 
+    font-weight: bold; 
+    font-family: Arial, sans-serif; 
+    background: linear-gradient(90deg, #00c3ff, #ff005e, #00ff85);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+    animation: gradientShift 5s linear infinite;
+">
+    Dost
+</span>
+
+<!-- Inline keyframes animation -->
+<style>
+@keyframes gradientShift {
+    0% { background-position: 0% 0%; }
+    50% { background-position: 100% 0%; }
+    100% { background-position: 0% 0%; }
+}
+</style>
+    </a>
+     </div>
+            <button class="new-chat-btn">
+                <i class="fas fa-plus"></i>
+                <span class="new-chat-text">New chat</span>
+            </button>
+        </div>
+        
+        <div class="history">
+            <div class="history-item">
+                <i class="fas fa-message"></i>
+                <span class="history-text">Physics concepts</span>
             </div>
-            <div class="header-buttons">
-                <button id="voice-toggle" class="voice-btn" title="Voice chat">
-                    <i class="fas fa-microphone"></i> Voice
-                </button>
-                <button id="clear-chat" class="clear-btn" title="Clear conversation">
-                    <i class="fas fa-broom"></i> Clear Chat
-                </button>
+            <div class="history-item">
+                <i class="fas fa-message"></i>
+                <span class="history-text">Math problems</span>
+            </div>
+            <div class="history-item">
+                <i class="fas fa-message"></i>
+                <span class="history-text">Study plan</span>
             </div>
         </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+        </div>
+    </div>
 
-        <!-- Study Mode Selector -->
-        <div class="mode-selector">
-            <div class="mode active" data-mode="general">
-                <i class="fas fa-comments"></i>
-                <span>General</span>
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="top-bar">
+            <div class="mode-selector">
+                <div class="mode active" data-mode="general">
+                    <i class="fas fa-comments"></i>
+                    <span>General</span>
+                </div>
+                <div class="mode" data-mode="subject">
+                    <i class="fas fa-book"></i>
+                    <span>Subject</span>
+                </div>
+                <div class="mode" data-mode="informative">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Informative</span>
+                </div>
+                <div class="mode" data-mode="motivation">
+                    <i class="fas fa-heart"></i>
+                    <span>Motivation</span>
+                </div>
             </div>
-            <div class="mode" data-mode="subject">
-                <i class="fas fa-book"></i>
-                <span>Subject</span>
-            </div>
-            <div class="mode" data-mode="quiz">
-                <i class="fas fa-puzzle-piece"></i>
-                <span>Quiz</span>
-            </div>
-            <div class="mode" data-mode="motivation">
-                <i class="fas fa-heart"></i>
-                <span>Motivation</span>
+            
+            <div class="header-buttons">
+                <button class="header-btn" id="voice-toggle" title="Voice chat">
+                    <i class="fas fa-microphone"></i>
+                    <span>Voice</span>
+                </button>
+                <button class="header-btn" id="clear-chat" title="Clear conversation">
+                    <i class="fas fa-broom"></i>
+                    <span>Clear</span>
+                </button>
             </div>
         </div>
 
         <!-- Chat Display -->
         <div id="chat-container">
-            <div class="message bot welcome">
-                <div class="avatar">
-                    <i class="fas fa-robot"></i>
+            <div class="welcome-container">
+                <h1 class="welcome-title">Hello, I'm SKY Dost</h1>
+                <p class="welcome-subtitle">Your study friend and assistant</p>
+                
+                <div class="capabilities">
+                    <div class="capability">
+                        <i class="fas fa-book"></i>
+                        <h3>Subject Help</h3>
+                        <p>Get explanations for any subject or topic you're studying</p>
+                    </div>
+                    <div class="capability">
+                        <i class="fas fa-lightbulb"></i>
+                        <h3>Informative Content</h3>
+                        <p>Learn with detailed explanations and examples</p>
+                    </div>
+                    <div class="capability">
+                        <i class="fas fa-heart"></i>
+                        <h3>Motivation</h3>
+                        <p>Get encouragement and study tips to stay focused</p>
+                    </div>
+                    <div class="capability">
+                        <i class="fas fa-graduation-cap"></i>
+                        <h3>Study Plans</h3>
+                        <p>Create customized study schedules and plans</p>
+                    </div>
                 </div>
-                <div class="message-content">
-                    <div class="sender">SKY Dost</div>
-                    <div class="text">Hello! I'm SKY Dost, your AI study friend. I'm here to help you with your studies, create study plans, and motivate you! How can I assist you today?</div>
-                    <div class="time">Just now</div>
-                </div>
+                
+                <p>How can I help with your studies today?</p>
             </div>
         </div>
 
         <!-- Typing indicator -->
         <div id="typing-indicator" style="display:none;">
-            <div class="avatar">
-                <i class="fas fa-robot"></i>
-            </div>
-            <div class="typing-content">
-                <div class="sender">SKY Dost</div>
-                <div class="typing-animation">
-                    <span></span>
-                    <span></span>
-                    <span></span>
+            <div class="message bot">
+                <div class="avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="typing-content">
+                    <div class="sender">SKY Dost</div>
+                    <div class="typing-animation">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Voice Status Indicator -->
-        <div id="voice-status" class="voice-status">
-            <i class="fas fa-microphone-slash"></i>
-            <span>Voice: Off</span>
-        </div>
-
         <!-- User Input -->
-        <form id="chat-form">
-            <div class="input-container">
-                <input type="text" name="message" id="user-input" placeholder="Ask me anything about your studies..." required autocomplete="off">
-                <button type="button" id="voice-button">
-                    <i class="fas fa-microphone"></i>
-                </button>
+        <div class="input-container">
+            <div class="input-box">
+                <textarea name="message" id="user-input" placeholder="Ask me anything about your studies..." rows="1" required autocomplete="off"></textarea>
                 <button type="submit" id="send-button">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
-        </form>
-
-        <!-- Help Button -->
-        <button class="help-button" id="help-button">
-            <i class="fas fa-question"></i>
-        </button>
-
-        <!-- Help Modal -->
-        <div class="help-modal" id="help-modal">
-            <h3><i class="fas fa-lightbulb"></i> Quick Help</h3>
-            <ul>
-                <li><i class="fas fa-book"></i> Ask about any subject</li>
-                <li><i class="fas fa-calendar"></i> Request study plans</li>
-                <li><i class="fas fa-puzzle-piece"></i> Take quizzes on topics</li>
-                <li><i class="fas fa-heart"></i> Get motivation & tips</li>
-                <li><i class="fas fa-microphone"></i> Use voice commands</li>
-                <li><i class="fas fa-graduation-cap"></i> Switch between study modes</li>
-            </ul>
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+<script src="static/script.js" defer></script>
 </body>
 </html>

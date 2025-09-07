@@ -5,6 +5,7 @@ import time
 import random
 import requests
 import json
+from flask_cors import CORS  # Add this import
 
 # Load environment variables
 load_dotenv()
@@ -12,6 +13,7 @@ load_dotenv()
 # Initialize Flask app
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "sky-dost-secret-key-2023")
+CORS(app)  # Add this to handle cross-origin requests
 
 # API Keys from environment
 API_KEYS = {
@@ -127,8 +129,16 @@ GREETING_RESPONSES = [
     "Hey there! Ready to explore some knowledge together? What are you studying?"
 ]
 
-def call_ai_provider(provider, user_message):
-    """Call specific AI provider API"""
+# Mode-specific prompts
+MODE_PROMPTS = {
+    "general": "You are SKY Dost, a friendly and helpful AI study assistant. Provide helpful, educational responses to the user's questions about their studies.",
+    "subject": "You are SKY Dost, an expert tutor. Provide detailed explanations about academic subjects, break down complex concepts, and offer learning strategies.",
+    "informative": "You are SKY Dost, an informative research assistant. Provide comprehensive, well-structured information with examples and practical applications.",
+    "motivation": "You are SKY Dost, a motivational coach. Provide encouraging, uplifting responses that help students stay focused and overcome challenges."
+}
+
+def call_ai_provider(provider, user_message, mode="general"):
+    """Call specific AI provider API with mode context"""
     headers = {
         "Content-Type": "application/json",
     }
@@ -141,9 +151,12 @@ def call_ai_provider(provider, user_message):
         headers["Authorization"] = f"Bearer {API_KEYS['openai']}"
         data = {
             "model": "gpt-3.5-turbo",
-            "messages": [{"role": "user", "content": user_message}],
+            "messages": [
+                {"role": "system", "content": MODE_PROMPTS.get(mode, MODE_PROMPTS["general"])},
+                {"role": "user", "content": user_message}
+            ],
             "temperature": 0.7,
-            "max_tokens": 300
+            "max_tokens": 500
         }
     elif provider == "groq":
         if not API_KEYS["groq"] or API_KEYS["groq"] in ["", "your-groq-api-key-here"]:
@@ -152,7 +165,10 @@ def call_ai_provider(provider, user_message):
         headers["Authorization"] = f"Bearer {API_KEYS['groq']}"
         data = {
             "model": "llama-3.1-8b-instant",
-            "messages": [{"role": "user", "content": user_message}],
+            "messages": [
+                {"role": "system", "content": MODE_PROMPTS.get(mode, MODE_PROMPTS["general"])},
+                {"role": "user", "content": user_message}
+            ],
             "temperature": 0.7,
             "max_tokens": 512
         }
@@ -163,9 +179,12 @@ def call_ai_provider(provider, user_message):
         headers["Authorization"] = f"Bearer {API_KEYS['perplexity']}"
         data = {
             "model": "sonar-small-chat",
-            "messages": [{"role": "user", "content": user_message}],
+            "messages": [
+                {"role": "system", "content": MODE_PROMPTS.get(mode, MODE_PROMPTS["general"])},
+                {"role": "user", "content": user_message}
+            ],
             "temperature": 0.2,
-            "max_tokens": 300
+            "max_tokens": 500
         }
     elif provider == "deepseek":
         if not API_KEYS["deepseek"] or API_KEYS["deepseek"] in ["", "your-deepseek-api-key-here"]:
@@ -174,9 +193,12 @@ def call_ai_provider(provider, user_message):
         headers["Authorization"] = f"Bearer {API_KEYS['deepseek']}"
         data = {
             "model": "deepseek-chat",
-            "messages": [{"role": "user", "content": user_message}],
+            "messages": [
+                {"role": "system", "content": MODE_PROMPTS.get(mode, MODE_PROMPTS["general"])},
+                {"role": "user", "content": user_message}
+            ],
             "temperature": 0.7,
-            "max_tokens": 300
+            "max_tokens": 500
         }
     elif provider == "claude":
         if not API_KEYS["claude"] or API_KEYS["claude"] in ["", "your-claude-api-key-here"]:
@@ -186,8 +208,10 @@ def call_ai_provider(provider, user_message):
         headers["anthropic-version"] = "2023-06-01"
         data = {
             "model": "claude-instant-1.2",
-            "max_tokens": 300,
-            "messages": [{"role": "user", "content": user_message}]
+            "max_tokens": 500,
+            "messages": [
+                {"role": "user", "content": f"{MODE_PROMPTS.get(mode, MODE_PROMPTS['general'])}\n\n{user_message}"}
+            ]
         }
     else:
         return None
@@ -232,7 +256,7 @@ def call_ai_provider(provider, user_message):
             provider_status[provider] = False
         return None
 
-def get_ai_response(user_message):
+def get_ai_response(user_message, mode="general"):
     """Get response from AI providers with fallback mechanism"""
     # Try each provider in priority order
     for provider in PROVIDER_PRIORITY:
@@ -242,7 +266,7 @@ def get_ai_response(user_message):
             
         if API_KEYS.get(provider) and API_KEYS[provider] not in [None, "", "your-api-key-here"]:
             print(f"Trying {provider}...")
-            response = call_ai_provider(provider, user_message)
+            response = call_ai_provider(provider, user_message, mode)
             if response:
                 print(f"✅ Success with {provider}")
                 return response, provider
@@ -281,21 +305,29 @@ def index():
     # Initialize chat history if it doesn't exist
     if "chat_history" not in session:
         session["chat_history"] = []
+    if "current_mode" not in session:
+        session["current_mode"] = "general"
     return render_template("index.html")
+
 
 @app.route("/chat", methods=["POST"])
 def chat():
     user_message = request.json.get("message", "").strip()
+    mode = request.json.get("mode", session.get("current_mode", "general"))
+    
     if not user_message:
         return jsonify({"error": "No message provided"}), 400
+
+    # Update current mode in session
+    session["current_mode"] = mode
 
     # Check for predefined commands first
     if user_message.lower() in PREDEFINED_RESPONSES:
         response_text = PREDEFINED_RESPONSES[user_message.lower()]
-        provider = "predefined"
     else:
         # Use AI providers with fallback
-        response_text, provider = get_ai_response(user_message)
+        response_text, provider = get_ai_response(user_message, mode)
+        # We're not sending provider info to frontend anymore
 
     # Update chat history in session
     chat_history = session.get("chat_history", [])
@@ -303,11 +335,19 @@ def chat():
         "user": user_message, 
         "bot": response_text, 
         "timestamp": time.time(),
-        "provider": provider
+        "mode": mode
     })
     session["chat_history"] = chat_history
     
+    # Return only the answer without provider info
     return jsonify({"answer": response_text})
+
+@app.route("/mode", methods=["POST"])
+def set_mode():
+    """Set the current conversation mode"""
+    mode = request.json.get("mode", "general")
+    session["current_mode"] = mode
+    return jsonify({"status": "success", "mode": mode})
 
 @app.route("/clear", methods=["POST"])
 def clear_chat():

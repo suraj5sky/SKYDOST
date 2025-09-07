@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Interactive SKY 3D Neon Holographic Logo with Mouse-based 3D Tilt & Energy Waves">
+    <title>SKY 3D Interactive Logo</title>
+
+    <style>
+        /* Import Futuristic Font */
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap');
+
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: radial-gradient(circle at 20% 30%, #020024, #000814 80%);
+            font-family: 'Orbitron', sans-serif;
+            overflow: hidden;
+            perspective: 1500px;
+            cursor: none;
+        }
+
+        /* Logo Container */
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            transition: transform 0.2s ease-out;
+        }
+
+        /* Logo Circle */
+        .logo-circle {
+            width: clamp(280px, 36vw, 420px);
+            height: clamp(280px, 36vw, 420px);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            position: relative;
+            overflow: hidden;
+            box-shadow:
+                0 0 40px rgba(255, 255, 255, 0.15),
+                0 0 90px rgba(0, 255, 255, 0.4);
+            transform-style: preserve-3d;
+            transition: transform 0.15s ease-out;
+        }
+
+        /* Rotating Neon Border */
+        .logo-circle::before {
+            content: '';
+            position: absolute;
+            width: 180%;
+            height: 180%;
+            background: conic-gradient(
+                #00c3ff,
+                #ff005e,
+                #00ff85,
+                #ff005e,
+                #00c3ff
+            );
+            border-radius: 50%;
+            animation: spinBorder 5s linear infinite;
+            z-index: 1;
+            filter: blur(1.5px);
+        }
+
+        @keyframes spinBorder {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+        }
+
+        /* Holographic Inner Surface */
+        .logo-circle::after {
+            content: '';
+            position: absolute;
+            width: 92%;
+            height: 92%;
+            background: radial-gradient(circle at 30% 30%, #04001f, #000814 80%);
+            border-radius: 50%;
+            z-index: 2;
+            animation: holographic 7s ease-in-out infinite;
+            background-size: 300% 300%;
+            box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.15);
+        }
+
+        @keyframes holographic {
+            0%   { background-position: 0% 0%; }
+            25%  { background-position: 100% 0%; }
+            50%  { background-position: 100% 100%; }
+            75%  { background-position: 0% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        /* Energy Waves */
+        .energy-wave {
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            border: 4px solid rgba(0, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: pulseWave 4s ease-out infinite;
+            z-index: 0;
+        }
+
+        .energy-wave:nth-child(1) { animation-delay: 0s; border-color: rgba(0, 195, 255, 0.6); }
+        .energy-wave:nth-child(2) { animation-delay: 1.3s; border-color: rgba(255, 0, 94, 0.6); }
+        .energy-wave:nth-child(3) { animation-delay: 2.6s; border-color: rgba(0, 255, 133, 0.6); }
+
+        @keyframes pulseWave {
+            0%   { transform: scale(0.8); opacity: 0.9; }
+            50%  { transform: scale(1.3); opacity: 0.5; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+
+        /* SKY Text Styling */
+        .logo-text {
+            display: flex;
+            gap: 10px;
+            font-size: clamp(52px, 7vw, 95px);
+            font-weight: 800;
+            letter-spacing: 2px;
+            z-index: 3;
+            text-transform: uppercase;
+            position: relative;
+            filter: drop-shadow(0 0 25px rgba(255,255,255,0.35));
+            transform: translateZ(30px);
+        }
+
+        /* Floating Letters Animation */
+        .logo-text span {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .logo-text span:nth-child(1) { animation-delay: 0s; }
+        .logo-text span:nth-child(2) { animation-delay: 0.2s; }
+        .logo-text span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes float {
+            0%   { transform: translateY(0px); }
+            50%  { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Neon Glow Per Letter */
+        #s {
+            color: #00c3ff;
+            text-shadow: 0 0 20px #00c3ff, 0 0 40px #00c3ff, 0 0 70px #00c3ff;
+        }
+
+        #k {
+            color: #ff005e;
+            text-shadow: 0 0 20px #ff005e, 0 0 40px #ff005e, 0 0 70px #ff005e;
+        }
+
+        #y {
+            color: #00ff85;
+            text-shadow: 0 0 20px #00ff85, 0 0 40px #00ff85, 0 0 70px #00ff85;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo-container" id="logo">
+        <!-- Energy Waves -->
+        <div class="energy-wave"></div>
+        <div class="energy-wave"></div>
+        <div class="energy-wave"></div>
+
+        <!-- Logo -->
+        <div class="logo-circle">
+            <h1 class="logo-text">
+                <span id="s">S</span>
+                <span id="k">K</span>
+                <span id="y">Y</span>
+            </h1>
+        </div>
+    </div>
+
+    <script>
+        // Mouse-based 3D Tilt Effect
+        const logo = document.getElementById("logo");
+
+        document.addEventListener("mousemove", (e) => {
+            const x = (e.clientX / window.innerWidth - 0.5) * 30;
+            const y = (e.clientY / window.innerHeight - 0.5) * 30;
+
+            logo.style.transform = `rotateX(${-y}deg) rotateY(${x}deg)`;
+        });
+
+        // Reset on Mouse Leave
+        document.addEventListener("mouseleave", () => {
+            logo.style.transform = "rotateX(0deg) rotateY(0deg)";
+        });
+    </script>
+</body>
+</html>
