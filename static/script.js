@@ -49,6 +49,134 @@ modeElements.forEach(mode => {
     });
 });
 
+
+// Add this to your existing script.js file
+
+// Voice recognition functionality
+let recognition = null;
+let isRecording = false;
+
+// Initialize voice recognition if available
+function initVoiceRecognition() {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            document.getElementById('user-input').value = transcript;
+            
+            // Auto-submit if there's text
+            if (transcript.trim()) {
+                setTimeout(() => {
+                    document.getElementById('send-button').click();
+                }, 500);
+            }
+            
+            hideRecordingIndicator();
+        };
+
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error', event.error);
+            hideRecordingIndicator();
+            appendMessage("bot", "Sorry, I couldn't hear you properly. Please try again.");
+        };
+
+        recognition.onend = function() {
+            isRecording = false;
+            updateVoiceButton();
+            hideRecordingIndicator();
+        };
+        
+        return true;
+    }
+    return false;
+}
+
+// Show recording indicator
+function showRecordingIndicator() {
+    document.getElementById('recording-indicator').style.display = 'block';
+}
+
+// Hide recording indicator
+function hideRecordingIndicator() {
+    document.getElementById('recording-indicator').style.display = 'none';
+}
+
+// Update voice button appearance based on state
+function updateVoiceButton() {
+    const voiceButton = document.getElementById('voice-toggle');
+    if (isRecording) {
+        voiceButton.innerHTML = '<i class="fas fa-microphone-slash"></i><span>Stop</span>';
+        voiceButton.style.background = '#ff005e';
+        voiceButton.style.color = 'white';
+    } else {
+        voiceButton.innerHTML = '<i class="fas fa-microphone"></i><span>Voice</span>';
+        voiceButton.style.background = '';
+        voiceButton.style.color = '';
+    }
+}
+
+// Toggle voice recording
+function toggleVoiceRecording() {
+    if (!recognition && !initVoiceRecognition()) {
+        appendMessage("bot", "Voice recognition is not supported in your browser. Please use Chrome or Edge.");
+        return;
+    }
+
+    if (isRecording) {
+        recognition.stop();
+        isRecording = false;
+        hideRecordingIndicator();
+    } else {
+        try {
+            recognition.start();
+            isRecording = true;
+            showRecordingIndicator();
+        } catch (error) {
+            console.error('Recognition start error:', error);
+            appendMessage("bot", "Unable to start voice recognition. Please check your microphone permissions.");
+        }
+    }
+    
+    updateVoiceButton();
+}
+
+// Add event listener for voice toggle button
+document.getElementById('voice-toggle').addEventListener('click', toggleVoiceRecording);
+
+// Add event listener for stop recording button
+document.getElementById('stop-recording').addEventListener('click', function() {
+    if (isRecording && recognition) {
+        recognition.stop();
+    }
+});
+
+// Add this to your existing window load event listener
+window.addEventListener("load", async () => {
+    userInput.focus();
+    
+    // Initialize voice recognition if available
+    initVoiceRecognition();
+    
+    try {
+        const response = await fetch('/status');
+        const status = await response.json();
+        
+        if (!status.any_provider_available) {
+            appendMessage("bot", "⚠️ Note: Running in basic mode. Add API keys to enable AI providers.", "system");
+        }
+    } catch (error) {
+        console.error("Error checking status:", error);
+    }
+});
+
+
+
+
 // Function to append messages to chat container
 function appendMessage(sender, message) {
     // Remove welcome message if it's the first user message
